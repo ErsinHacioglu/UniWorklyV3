@@ -42,6 +42,31 @@ class Job extends Equatable {
       outcome == JobOutcome.success &&
       !isRated;
 
+  /// copyWith eklendi ✅
+  Job copyWith({
+    String? id,
+    String? title,
+    String? companyName,
+    DateTime? startAt,
+    DateTime? endAt,
+    JobStatus? status,
+    bool? isRated,
+    EmployerRating? myRating,
+    JobOutcome? outcome,
+  }) {
+    return Job(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      companyName: companyName ?? this.companyName,
+      startAt: startAt ?? this.startAt,
+      endAt: endAt ?? this.endAt,
+      status: status ?? this.status,
+      isRated: isRated ?? this.isRated,
+      myRating: myRating ?? this.myRating,
+      outcome: outcome ?? this.outcome,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

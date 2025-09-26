@@ -10,6 +10,7 @@ import 'job_detail_page.dart';
 import '../../applications/application/applications_controller.dart';
 import '../../applications/domain/application_models.dart';
 import '../../applications/presentation/application_detail_page.dart'; // Başvuru detayı
+import '../../messages/chat_page.dart'; // ChatArgs için
 
 /// Üstteki iki kademeli sekme: 0 = İşlerim, 1 = Başvurularım
 final jobsTabProvider = StateProvider<int>((ref) => 0);
@@ -300,6 +301,7 @@ class _JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPast = job.status == JobStatus.past;
+    final isUpcoming = job.status == JobStatus.upcoming;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -336,12 +338,14 @@ class _JobCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+
+              // TRAILING
               if (isPast)
+                // Geçmiş: Değerlendir / Yıldızlar
                 (job.isRated && job.myRating != null)
                     ? SizedBox(
                         height: 44,
-                        child: Center(
-                            child: _Stars(stars: job.myRating!.stars)),
+                        child: Center(child: _Stars(stars: job.myRating!.stars)),
                       )
                     : ConstrainedBox(
                         constraints: const BoxConstraints(
@@ -353,14 +357,48 @@ class _JobCard extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: onRateTap,
                           style: ElevatedButton.styleFrom(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             minimumSize: const Size(88, 40),
                           ),
                           child: const Text('Değerlendir'),
                         ),
                       )
+              else if (isUpcoming)
+                // Gelecek: Mesaj ve Ara ikonları (sağa yapışık)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // --- KURAL: İş başlangıcından 24 saat önce aktif olacak ---
+                    // if (DateTime.now().isAfter(job.startAt.subtract(const Duration(hours: 24))))
+                    IconButton(
+                      tooltip: 'Mesaj',
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/chat',
+                          arguments: ChatArgs(
+                            id: 'employer_${job.companyName}', // aynı thread id
+                            name: job.companyName,
+                          ),
+                        );
+                      },
+                    ),
+                    // if (DateTime.now().isAfter(job.startAt.subtract(const Duration(hours: 24))))
+                    IconButton(
+                      tooltip: 'Ara',
+                      icon: const Icon(Icons.call_outlined),
+                      onPressed: () {
+                        // Şimdilik sembolik arama
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Arama başlatılıyor (placeholder)')),
+                        );
+                      },
+                    ),
+                  ],
+                )
               else
+                // Aktif: chevron
                 const Icon(Icons.chevron_right),
             ],
           ),
